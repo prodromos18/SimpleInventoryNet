@@ -1,12 +1,13 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SimpleInventory.Data;
 
 namespace SimpleInventory.Web.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly InventoryDbContext _dbContext;
+        private readonly InventoryDbContext _db;
 
         public ProductsController(InventoryDbContext db)
         {
