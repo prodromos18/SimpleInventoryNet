@@ -1,0 +1,28 @@
+@* Razor view - HTML markup for displaying a list of products in a table format. *@
+@model IEnumerable<SimpleInventory.Data.Entities.Product>
+
+<h2>Products</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Sku</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Category</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Sku</td>
+                <td>@product.Name</td>
+                <td>@product.Price</td>
+                <td>@product.Quantity</td>
+                <td>@product.Category?.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
