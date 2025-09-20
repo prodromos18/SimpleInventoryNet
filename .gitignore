@@ -1,0 +1,55 @@
+# ===============================
+# Visual Studio / .NET Core
+# ===============================
+
+## Build results
+bin/
+obj/
+out/
+
+## Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## VS Code files
+.vscode/
+
+## Rider files
+.idea/
+
+## Resharper files
+*.DotSettings.user
+
+## NuGet
+*.nupkg
+# NuGet Packages folder
+packages/
+# NuGet global packages
+%USERPROFILE%\.nuget\packages/
+
+## EF Core Migrations
+**/Migrations/
+
+## Logs
+*.log
+logs/
+
+## OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## User secrets (for local development)
+secrets.json
+appsettings.*.Local.json
+
+## Database files
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+## Publish output
+publish/
