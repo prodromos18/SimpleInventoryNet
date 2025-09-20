@@ -34,7 +34,7 @@ namespace SimpleInventory.Data
             .HasMany(c => c.Products)
             .WithOne(p => p.Category)
             .HasForeignKey(p => p.CategoryId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict); //Do not delete category if products exist
                 
             // Seed Categories only, since only static data can be seeded here
             modelBuilder.Entity<Category>().HasData(

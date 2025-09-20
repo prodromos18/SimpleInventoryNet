@@ -10,21 +10,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.0" />
-    <PackageReference Include="FluentAssertions" Version="8.6.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
+    <!-- Core testing -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+
+    <!-- FluentAssertions for nicer assertions -->
+    <PackageReference Include="FluentAssertions" Version="8.6.0" />
+
+    <!-- In-memory EF Core for testing DbContext -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
+
+    <!-- Optional: coverage collector -->
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Allow global using of Xunit -->
     <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Reference the main projects -->
     <ProjectReference Include="..\..\src\SimpleInventory.Data\SimpleInventory.Data.csproj" />
     <ProjectReference Include="..\..\src\SimpleInventory.Domain\SimpleInventory.Domain.csproj" />
+    <ProjectReference Include="..\..\src\SimpleInventory.Web\SimpleInventory.Web.csproj" />
   </ItemGroup>
 
 </Project>
