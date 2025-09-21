@@ -3,31 +3,39 @@ using Microsoft.EntityFrameworkCore;
 using SimpleInventory.Data;
 using SimpleInventory.Data.Entities;
 
-namespace SimpleInventory.Web.Api
+namespace SimpleInventory.Web.Controllers.Api
 {
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     [ApiController]
     public class CategoriesController : ControllerBase
     {
         private readonly InventoryDbContext _db;
 
-        public CategoriesController(InventoryDbContext db) // DI inject
+        public CategoriesController(InventoryDbContext db)
         {
             _db = db;
         }
 
         // GET: /api/categories
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
+        public async Task<ActionResult<IEnumerable<Category>>> Get()
         {
-            return await _db.Categories.ToListAsync();
+            return Ok(await _db.Categories.ToListAsync());
+        }
+
+        // GET: /api/categories/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            var category = await _db.Categories.FindAsync(id);
+            if (category == null) return NotFound();
+            return Ok(category);
         }
 
         // POST: /api/categories
         [HttpPost]
-        public async Task<ActionResult<Category>> CreateCategory(Category category)
+        public async Task<IActionResult> Create([FromBody] Category category)
         {
-            // Validate uniqueness
             if (await _db.Categories.AnyAsync(c => c.Name == category.Name))
             {
                 return Conflict(new { message = "Category name already exists." });
@@ -36,7 +44,7 @@ namespace SimpleInventory.Web.Api
             _db.Categories.Add(category);
             await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCategories), new { id = category.Id }, category);
+            return CreatedAtAction(nameof(Get), new { id = category.Id }, category);
         }
     }
 }

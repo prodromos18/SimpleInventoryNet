@@ -1,18 +1,31 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models; // needed for Swagger info
 using SimpleInventory.Data;
 using SimpleInventory.Data.Entities;
 
 // Create the app builder (the host)
-// Contains the kestrel web server and configuration
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Registers MVC controllers and razor views
 builder.Services.AddControllersWithViews();
+
 // Requirements say to use SQLite database
 // Register InventoryDbContext with dependency injection
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlite("Data Source=inventory.db"));
+
+// Add Swagger services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "SimpleInventory API",
+        Version = "v1",
+        Description = "API for managing products and categories"
+    });
+});
 
 var app = builder.Build();
 
@@ -36,6 +49,17 @@ using (var scope = app.Services.CreateScope())
         );
         db.SaveChanges();
     }
+}
+
+// Enable Swagger
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "SimpleInventory API v1");
+        c.RoutePrefix = "swagger"; // UI available at /swagger
+    });
 }
 
 // Configure MVC

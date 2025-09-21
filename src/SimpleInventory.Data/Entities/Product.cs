@@ -10,15 +10,15 @@ public class Product
 
     [Required]
     [StringLength(32, MinimumLength = 3)]
-    public string Sku { get; set; } = default!;
+    public string Sku { get; set; } = string.Empty;
 
     [Required]
-    public string Name { get; set; } = default!;
+    public string Name { get; set; } = string.Empty;
 
-    [Range(0, double.MaxValue)]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be positive.")]
     public decimal Price { get; set; }
 
-    [Range(0, int.MaxValue)]
+    [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative.")]
     public int Quantity { get; set; }
 
     // Foreign key (CategoryId)
