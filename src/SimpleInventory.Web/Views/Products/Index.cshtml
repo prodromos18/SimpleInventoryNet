@@ -1,28 +1,64 @@
-@* Razor view - HTML markup for displaying a list of products in a table format. *@
-@model IEnumerable<SimpleInventory.Data.Entities.Product>
+@model List<SimpleInventory.Data.Entities.Product>
+@{
+    ViewBag.Title = "Products";
+}
 
 <h2>Products</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Sku</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Category</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var product in Model)
+<form method="get">
+    Search: <input name="q" value="@ViewBag.Query" />
+    Category:
+    <select name="categoryId">
+        <option value="">All</option>
+        @foreach(var c in ViewBag.Categories)
         {
-            <tr>
-                <td>@product.Sku</td>
-                <td>@product.Name</td>
-                <td>@product.Price</td>
-                <td>@product.Quantity</td>
-                <td>@product.Category?.Name</td>
-            </tr>
+            <option value="@c.Id" @(ViewBag.CategoryId == c.Id ? "selected" : "")>@c.Name</option>
         }
-    </tbody>
+    </select>
+    <button type="submit">Filter</button>
+</form>
+
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>SKU</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Category</th>
+        <th>Actions</th>
+    </tr>
+    @foreach(var p in Model)
+    {
+        <tr>
+            <td>@p.Name</td>
+            <td>@p.Sku</td>
+            <td>@p.Price</td>
+            <td>@p.Quantity</td>
+            <td>@p.Category?.Name</td>
+            <td>
+                <a href="/Products/Edit/@p.Id">Edit</a> |
+                <a href="/Products/Delete/@p.Id">Delete</a>
+            </td>
+        </tr>
+    }
 </table>
+
+@if(ViewBag.TotalPages > 1)
+{
+    <div>
+        Page:
+        @for(int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            if(i == ViewBag.CurrentPage)
+            {
+                <strong>@i</strong>
+            }
+            else
+            {
+                <a href="?page=@i&q=@ViewBag.Query&categoryId=@ViewBag.CategoryId">@i</a>
+            }
+        }
+    </div>
+}
+
+<a href="/Products/Create">Create New Product</a>

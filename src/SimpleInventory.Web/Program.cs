@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Registers MVC controllers and razor views
 builder.Services.AddControllersWithViews();
 // Requirements say to use SQLite database
-// Register your InventoryDbContext with dependency injection
+// Register InventoryDbContext with dependency injection
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlite("Data Source=inventory.db"));
 
