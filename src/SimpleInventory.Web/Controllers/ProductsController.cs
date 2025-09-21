@@ -1,13 +1,13 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SimpleInventory.Data;
 using SimpleInventory.Data.Entities;
 
-namespace SimpleInventory.Web.Controllers
+namespace SimpleInventory.Web.Api
 {
-    public class ProductsController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductsController : ControllerBase
     {
         private readonly InventoryDbContext _db;
 
@@ -16,117 +16,134 @@ namespace SimpleInventory.Web.Controllers
             _db = db;
         }
 
-        // GET: Products
-        public async Task<IActionResult> Index(string q, int? categoryId, int page = 1)
+        // GET: /api/products
+        [HttpGet]
+        public async Task<ActionResult<object>> Get(
+            string? q = null,
+            int? categoryId = null,
+            int page = 1,
+            int pageSize = 10)
         {
-            const int pageSize = 10;
-
             var query = _db.Products.Include(p => p.Category).AsQueryable();
 
-            if (!string.IsNullOrEmpty(q))
+            if (!string.IsNullOrWhiteSpace(q))
                 query = query.Where(p => p.Name.Contains(q) || p.Sku.Contains(q));
 
             if (categoryId.HasValue)
                 query = query.Where(p => p.CategoryId == categoryId.Value);
 
-            query = query.OrderBy(p => p.Name);
-
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             var total = await query.CountAsync();
 
-            ViewBag.TotalPages = (total + pageSize - 1) / pageSize;
-            ViewBag.CurrentPage = page;
-            ViewBag.Query = q;
-            ViewBag.CategoryId = categoryId;
-            ViewBag.Categories = await _db.Categories.ToListAsync();
+            var items = await query
+                .OrderBy(p => p.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-            return View(items);
-        }
-
-        // GET: Products/Create
-        public async Task<IActionResult> Create()
-        {
-            ViewBag.Categories = await _db.Categories.ToListAsync();
-            return View();
-        }
-
-        // POST: Products/Create
-        [HttpPost]
-        public async Task<IActionResult> Create(Product product)
-        {
-            if (product.Price < 0 || product.Quantity < 0)
-                ModelState.AddModelError("", "Price and Quantity must be non-negative.");
-
-            if (await _db.Products.AnyAsync(p => p.Sku == product.Sku))
-                ModelState.AddModelError("Sku", "SKU must be unique.");
-
-            if (!ModelState.IsValid)
+            return Ok(new
             {
-                ViewBag.Categories = await _db.Categories.ToListAsync();
-                return View(product);
-            }
+                items,
+                total,
+                page,
+                pageSize
+            });
+        }
 
-            product.UpdatedAt = System.DateTime.UtcNow;
+        // GET: /api/products/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetById(int id)
+        {
+            var product = await _db.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return NotFound();
+            return Ok(product);
+        }
+
+        // POST: /api/products
+        [HttpPost]
+        public async Task<ActionResult<Product>> Create([FromBody] ProductDto dto)
+        {
+            // Validation
+            if (dto.Price < 0 || dto.Quantity < 0)
+                return ValidationProblem("Price and Quantity must be non-negative.");
+
+            if (dto.Sku.Length < 3 || dto.Sku.Length > 32)
+                return ValidationProblem("SKU must be 3-32 characters long.");
+
+            if (await _db.Products.AnyAsync(p => p.Sku == dto.Sku))
+                return Conflict(new { message = "SKU must be unique." });
+
+            var category = await _db.Categories.FindAsync(dto.CategoryId);
+            if (category == null)
+                return BadRequest(new { message = "Category does not exist." });
+
+            var product = new Product
+            {
+                Name = dto.Name,
+                Sku = dto.Sku,
+                Price = dto.Price,
+                Quantity = dto.Quantity,
+                CategoryId = dto.CategoryId,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             _db.Products.Add(product);
             await _db.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
 
-        // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(int id)
+        // PUT: /api/products/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Product>> Update(int id, [FromBody] ProductDto dto)
         {
             var product = await _db.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            ViewBag.Categories = await _db.Categories.ToListAsync();
-            return View(product);
-        }
+            if (dto.Price < 0 || dto.Quantity < 0)
+                return ValidationProblem("Price and Quantity must be non-negative.");
 
-        // POST: Products/Edit/5
-        [HttpPost]
-        public async Task<IActionResult> Edit(Product product)
-        {
-            if (product.Price < 0 || product.Quantity < 0)
-                ModelState.AddModelError("", "Price and Quantity must be non-negative.");
+            if (dto.Sku.Length < 3 || dto.Sku.Length > 32)
+                return ValidationProblem("SKU must be 3-32 characters long.");
 
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Categories = await _db.Categories.ToListAsync();
-                return View(product);
-            }
+            if (await _db.Products.AnyAsync(p => p.Sku == dto.Sku && p.Id != id))
+                return Conflict(new { message = "SKU must be unique." });
 
-            product.UpdatedAt = System.DateTime.UtcNow;
+            var category = await _db.Categories.FindAsync(dto.CategoryId);
+            if (category == null)
+                return BadRequest(new { message = "Category does not exist." });
+
+            product.Name = dto.Name;
+            product.Sku = dto.Sku;
+            product.Price = dto.Price;
+            product.Quantity = dto.Quantity;
+            product.CategoryId = dto.CategoryId;
+            product.UpdatedAt = DateTime.UtcNow;
 
             _db.Products.Update(product);
             await _db.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return Ok(product);
         }
 
-        // GET: Products/Delete/5
+        // DELETE: /api/products/5
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await _db.Products.Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var product = await _db.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            return View(product);
+            _db.Products.Remove(product);
+            await _db.SaveChangesAsync();
+            return NoContent();
         }
+    }
 
-        // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var product = await _db.Products.FindAsync(id);
-            if (product != null)
-            {
-                _db.Products.Remove(product);
-                await _db.SaveChangesAsync();
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
+    public class ProductDto
+    {
+        public string Name { get; set; } = null!;
+        public string Sku { get; set; } = null!;
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+        public int CategoryId { get; set; }
     }
 }

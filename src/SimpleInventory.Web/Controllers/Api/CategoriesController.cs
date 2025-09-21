@@ -11,7 +11,7 @@ namespace SimpleInventory.Web.Api
     {
         private readonly InventoryDbContext _db;
 
-        public CategoriesController(InventoryDbContext db) // DI inject
+        public CategoriesController(InventoryDbContext db)
         {
             _db = db;
         }
@@ -27,16 +27,51 @@ namespace SimpleInventory.Web.Api
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory(Category category)
         {
-            // Validate uniqueness
+            if (string.IsNullOrWhiteSpace(category.Name))
+            {
+                return ValidationProblem("Category name is required.");
+            }
+
             if (await _db.Categories.AnyAsync(c => c.Name == category.Name))
             {
-                return Conflict(new { message = "Category name already exists." });
+                var problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Conflict",
+                    Detail = "Category name already exists."
+                };
+                return Conflict(problem);
             }
 
             _db.Categories.Add(category);
             await _db.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetCategories), new { id = category.Id }, category);
+        }
+
+        // DELETE: /api/categories/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var category = await _db.Categories.Include(c => c.Products).FirstOrDefaultAsync(c => c.Id == id);
+            if (category == null)
+                return NotFound();
+
+            if (category.Products.Any())
+            {
+                var problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Conflict",
+                    Detail = "Cannot delete category because it has associated products."
+                };
+                return Conflict(problem);
+            }
+
+            _db.Categories.Remove(category);
+            await _db.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
