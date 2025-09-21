@@ -1,0 +1,44 @@
+@model SimpleInventory.Data.Entities.Product
+@{
+    ViewBag.Title = "Edit Product";
+}
+
+<h2>Edit Product</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        Name: <input asp-for="Name" />
+        <span asp-validation-for="Name" style="color:red"></span>
+    </div>
+
+    <div>
+        SKU: <input asp-for="Sku" />
+        <span asp-validation-for="Sku" style="color:red"></span>
+    </div>
+
+    <div>
+        Price: <input asp-for="Price" />
+        <span asp-validation-for="Price" style="color:red"></span>
+    </div>
+
+    <div>
+        Quantity: <input asp-for="Quantity" />
+        <span asp-validation-for="Quantity" style="color:red"></span>
+    </div>
+
+    <div>
+        Category:
+        <select asp-for="CategoryId">
+            @foreach(var c in ViewBag.Categories)
+            {
+                <option value="@c.Id" @(Model.CategoryId == c.Id ? "selected" : "")>@c.Name</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit">Save Changes</button>
+</form>
+
+<a href="/Products">Back to list</a>

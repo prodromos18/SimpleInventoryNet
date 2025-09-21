@@ -1,0 +1,24 @@
+@model SimpleInventory.Data.Entities.Product
+@{
+    ViewBag.Title = "Create Product";
+}
+
+<h2>Create Product</h2>
+
+<form method="post">
+    <div>Name: <input asp-for="Name" /></div>
+    <div>SKU: <input asp-for="Sku" /></div>
+    <div>Price: <input asp-for="Price" /></div>
+    <div>Quantity: <input asp-for="Quantity" /></div>
+    <div>Category:
+        <select asp-for="CategoryId">
+            @foreach(var c in ViewBag.Categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Save</button>
+</form>
+
+<a href="/Products">Back to list</a>

@@ -1,24 +1,18 @@
-@model IEnumerable<SimpleInventory.Data.Entities.Category>
+@model List<SimpleInventory.Data.Entities.Category>
+@{
+    ViewBag.Title = "Categories";
+}
 
 <h2>Categories</h2>
-<a href="/Categories/Create">Create New</a>
 
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
-        {
-            <tr>
-                <td>@c.Name</td>
-                <td>
-                    <a href="/Categories/Delete/@c.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
+<table border="1">
+    <tr>
+        <th>Name</th>
+    </tr>
+    @foreach(var c in Model)
+    {
+        <tr><td>@c.Name</td></tr>
+    }
 </table>
+
+<a href="/Categories/Create">Create New Category</a>
