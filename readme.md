@@ -33,6 +33,7 @@ cd SimpleInventoryNet
 ### 2. Restore Dependencies
 
 ```powershell
+dotnet tool install --global dotnet-ef
 dotnet restore
 dotnet build
 ```
@@ -101,7 +102,7 @@ The app will start and listen on `https://localhost:5001` and/or `http://localho
 ## Using the Web UI
 
 1. Open your browser and go to:
-   - `https://localhost:5001/` or `http://localhost:5000/`
+   - `localhost:5001/Products` or `localhost:5000/Categories/`
 2. Use the navigation links to manage Products and Categories via the Razor Pages UI.
 
 ---
